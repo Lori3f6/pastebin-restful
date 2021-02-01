@@ -1,20 +1,23 @@
 package cat.kiwi.demos.restful.pastebin
 
 import com.google.common.hash.Hashing
+import io.vertx.ext.web.handler.CorsHandler
 import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.RoutingContext
+import redis.clients.jedis.Jedis
 import kotlin.text.Charsets.UTF_8
 
 object Application {
-    private val contentMap = HashMap<String, String>()
+    private val jedis = Jedis("127.0.0.1", 6379)
 
     @JvmStatic
     fun main(args: Array<String>) {
         val vertx = Vertx.vertx()
         val router = Router.router(vertx)
 
+        router.route().handler(CorsHandler.create("*"))
         router.post("/api/v1/paste").handler(::pasteHandler)
         router.get("/api/v1/get_content/:key").handler(::getContentHandler)
 
@@ -41,7 +44,7 @@ object Application {
      *     }
      */
     private fun getContentHandler(routingContext: RoutingContext) = with(routingContext) {
-        when (val result = contentMap[request().getParam("key")]) {
+        when (val result = jedis[request().getParam("key")]) {
             null -> {
                 val responseJson = JsonObject()
                 responseJson.put("error", "TODO")
@@ -89,7 +92,7 @@ object Application {
                 }
                 val hash =
                     Hashing.goodFastHash(32).hashBytes(requestJson.getString("content").toByteArray(UTF_8)).toString()
-                contentMap[hash] = requestJson.getString("content").toString()
+                jedis[hash] = requestJson.getString("content").toString()
                 val responseJson = JsonObject()
                 responseJson.put("key", hash)
                 response().putHeader("Content-Type", "application/json").end(responseJson.toString())

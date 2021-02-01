@@ -15,6 +15,7 @@ dependencies {
     implementation(kotlin("stdlib"))
     implementation("io.vertx:vertx-core:$vertXVersion")
     implementation("io.vertx:vertx-web:$vertXVersion")
+    implementation("redis.clients:jedis:3.5.1")
     implementation("com.google.guava:guava:30.1-jre")
     testCompile("junit", "junit", "4.12")
 }
