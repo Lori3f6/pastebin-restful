@@ -9,21 +9,20 @@ import kotlin.text.Charsets.UTF_8
 
 object Application {
     private val contentMap = HashMap<String, String>()
-//    private val configFile = File("./config.json")
 
     @JvmStatic
     fun main(args: Array<String>) {
         val vertx = Vertx.vertx()
         val router = Router.router(vertx)
 
-        router.post("/paste").handler(::pasteHandler)
-        router.get("/g/:key").handler(::getContentHandler)
+        router.post("/api/v1/paste").handler(::pasteHandler)
+        router.get("/api/v1/get_content/:key").handler(::getContentHandler)
 
         vertx.createHttpServer().requestHandler(router).listen(8180)
     }
 
     /**
-     * @api {get} /g/:key Query content by key
+     * @api {get} /api/v1/get_content/:key Query content by key
      * @apiName GetContent
      * @apiGroup GetContent
      *
@@ -59,7 +58,8 @@ object Application {
 
 
     /**
-     * @api {post} /paste Send paste
+     * @api {post} /api/v1/paste Send paste
+     *
      * @apiName SendPaste
      * @apiGroup SendPaste
      *
