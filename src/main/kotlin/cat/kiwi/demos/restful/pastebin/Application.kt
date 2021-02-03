@@ -91,10 +91,16 @@ object Application {
                     response().setStatusCode(500).end()
                 }
                 val hash =
-                    Hashing.goodFastHash(32).hashBytes(requestJson.getString("content").toByteArray(UTF_8)).toString()
-                jedis[hash] = requestJson.getString("content").toString()
+                    Hashing.hmacSha512(System.nanoTime().toString().toByteArray())
+                        .hashBytes(requestJson.getString("content").toByteArray(UTF_8)).toString()
+                var length = 12;
+                var key = hash.substring(0, length++)
+                while (jedis[key] != null) {
+                    key = hash.substring(0, length++)
+                }
+                jedis[key] = requestJson.getString("content").toString()
                 val responseJson = JsonObject()
-                responseJson.put("key", hash)
+                responseJson.put("key", key)
                 response().putHeader("Content-Type", "application/json").end(responseJson.toString())
 
             } catch (e: Exception) {
